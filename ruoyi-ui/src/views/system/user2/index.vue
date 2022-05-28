@@ -496,44 +496,21 @@ export default {
   },
   methods: {
 
+    /**搜索建议**/
     querySearchAsync(queryString, cb) {
       clearTimeout(this.timer)
-      // 影片关键字
       this.timer = setTimeout(async() => {
         const res = await suggest(this.queryParams.key)
-        // console.log('res',res);
-        // this.restaurants = res
-        // this.restaurants.forEach(res=>{
-        //   res.value = res
-        // })
-        // // 调用 callback 返回建议列表的数据
-        // cb(this.restaurants);
-        this.suggestion=[]
+        this.suggestion = []
         for (let item of res) {
-         // this.suggestion.value = item
-          this.suggestion.push({"value": item})
+          // this.suggestion.value = item
+          this.suggestion.push({ 'value': item })
         }
         console.log(this.suggestion)
         cb(this.suggestion)
       }, 100)
     },
 
-    // querySearchAsync(queryString, cb) {
-    //   var restaurants = this.restaurants;
-    //   var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-    //
-    //   clearTimeout(this.timeout);
-    //   console.log(results)
-    //   this.timeout = setTimeout(() => {
-    //     cb(results);
-    //   }, 3000 * Math.random());
-    // },
-    // createStateFilter(queryString) {
-    //   return (state) => {
-    //     return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-    //   };
-    // }
-    // ,
     loadAll() {
       return [
         { 'value': '三全鲜食（北新泾店）', 'address': '长宁区新渔路144号' },
@@ -567,6 +544,8 @@ export default {
 
     /*搜索公司*/
     searchCompany() {
+      this.queryParams.title = this.queryParams.key
+      this.queryParams.key = undefined
       this.queryParams.pageNum = 1
       this.getCompanyList()
     }
@@ -690,7 +669,7 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1
-      this.getList()
+      this.getCompanyList()
     }
     ,
     /** 重置按钮操作 */
