@@ -30,15 +30,14 @@ public class CompanyController extends BaseController {
     /**
      * 获取用户列表
      */
-//    @GetMapping("/list")
-//    public TableDataInfo list(HeFeiCompanyAdvice heFeiCompanyAdvice) {
-//        startPage();
-//        List<HeFeiCompanyAdvice> list = companyService.listCompany(heFeiCompanyAdvice);
-//        return getDataTable(list);
-//    }
 
     @GetMapping("list")
     public PageResult search(RequestParams params) {
         return companyService.listCompany(params);
+    }
+
+    @GetMapping("suggestion")
+    public List<String> getSuggestion(@RequestParam("key") String key) {
+        return companyService.getSuggestion(key);
     }
 }
