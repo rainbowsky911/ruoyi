@@ -17,4 +17,6 @@ public interface CompanyService {
 
 
     PageResult listCompany(RequestParams params);
+
+    List<String> getSuggestion(String key);
 }

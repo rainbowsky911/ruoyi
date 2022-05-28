@@ -86,17 +86,19 @@ public class CompanyTest {
      * 将数据保存到ES到
      */
     @Test
-    public  void saveTOES(){
+    public void saveTOES() {
 
     }
 
 
-
-
-
-
-
-
+    /**
+     * 搜索补全
+     */
+    @Test
+    public void testSuggestion() {
+        String key = "讯飞";
+        companyService.getSuggestion(key).stream().forEach(System.out::println);
+    }
 
 
     @BeforeEach

@@ -5,6 +5,7 @@ import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.HeFeiCompanyAdvice;
 import com.ruoyi.web.PageResult;
 import com.ruoyi.web.RequestParams;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -14,11 +15,16 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.search.suggest.Suggest;
+import org.elasticsearch.search.suggest.SuggestBuilder;
+import org.elasticsearch.search.suggest.SuggestBuilders;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -27,12 +33,13 @@ import java.util.List;
  * @Description:
  */
 @Service
+@Slf4j
 public class CompanyServiceImpl implements CompanyService {
 
     @Autowired
     private RestHighLevelClient client;
     //ES索引名称
-    private final static String INDEX_NAME = "company_advice";
+    private final static String INDEX_NAME = "company";
 
     @Override
     public PageResult listCompany(RequestParams params) {
@@ -74,4 +81,36 @@ public class CompanyServiceImpl implements CompanyService {
         }
         return new PageResult(total, list, list);
     }
+
+
+    @Override
+    public List<String> getSuggestion(String key) {
+        try {
+            SearchRequest request = new SearchRequest(INDEX_NAME);
+
+            request.source().suggest(new SuggestBuilder()
+                    .addSuggestion("suggestions",
+                            SuggestBuilders.completionSuggestion("suggestion")
+                                    .prefix(key)
+                                    .skipDuplicates(true)
+                                    .size(5)));
+            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            log.info("DSL语句为：{}",request.source().toString());
+
+            Suggest suggestions = response.getSuggest();
+            CompletionSuggestion suggestion = suggestions.getSuggestion("suggestions");
+            List<String> list = new ArrayList<>();
+            List<CompletionSuggestion.Entry.Option> options = suggestion.getOptions();
+
+            for (CompletionSuggestion.Entry.Option option : options) {
+                String str = option.getText().toString();
+                list.add(str);
+            }
+
+            return list;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
