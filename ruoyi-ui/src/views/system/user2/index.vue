@@ -11,13 +11,27 @@
                  label-width="68px"
         >
           <el-form-item label="公司名称" prop="title">
-            <el-input
-              v-model="queryParams.title"
-              placeholder="请输入公司名称"
-              clearable
-              style="width: 240px"
-              @keyup.enter.native="handleQuery"
-            />
+            <el-col :span="12">
+              <el-autocomplete
+                class="inline-input"
+                v-model="state2"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入内容"
+                :trigger-on-focus="false"
+                @select="handleSelect"
+              ></el-autocomplete>
+            </el-col>
+
+            <el-col :span="12">
+              <el-input title="输入关键字搜索酒店"
+                        v-model="queryParams.key"
+                        placeholder="请输入内容"
+                        @input="handleKeyUp()"
+              >
+              </el-input>
+            </el-col>
+
+
           </el-form-item>
           <el-form-item>
             <el-button type="primary" icon="el-icon-search" size="mini" @click="searchCompany">搜索</el-button>
@@ -49,7 +63,8 @@
               size="mini"
               @click="handleAdd"
               v-hasPermi="['system:user:add']"
-            >新增</el-button>
+            >新增
+            </el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -60,7 +75,8 @@
               :disabled="single"
               @click="handleUpdate"
               v-hasPermi="['system:user:edit']"
-            >修改</el-button>
+            >修改
+            </el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -71,7 +87,8 @@
               :disabled="multiple"
               @click="handleDelete"
               v-hasPermi="['system:user:remove']"
-            >删除</el-button>
+            >删除
+            </el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -81,7 +98,8 @@
               size="mini"
               @click="handleImport"
               v-hasPermi="['system:user:import']"
-            >导入</el-button>
+            >导入
+            </el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -91,7 +109,8 @@
               size="mini"
               @click="handleExport"
               v-hasPermi="['system:user:export']"
-            >导出</el-button>
+            >导出
+            </el-button>
           </el-col>
 
         </el-row>
@@ -331,6 +350,7 @@ import { treeselect } from '@/api/system/dept'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import item from '@/layout/components/Sidebar/Item'
+import axios from 'axios'
 
 export default {
   name: 'User',
@@ -338,6 +358,10 @@ export default {
   components: { Treeselect },
   data() {
     return {
+      restaurants: [],
+      state1: '',
+      state2: '',
+
       // 遮罩层
       loading: true,
       // 选中数组
@@ -365,6 +389,8 @@ export default {
       //留言内容
       commentList: [],
 
+      ops: [],
+      showOps: false,
       // 弹出层标题
       title: undefined,
       // 部门树选项
@@ -411,7 +437,8 @@ export default {
         status: undefined,
         deptId: undefined,
         title: undefined,
-        sortType: 0
+        sortType: 0,
+        key: undefined,
 
       },
       // 列信息
@@ -480,32 +507,79 @@ export default {
   },
   methods: {
 
-    /* *排序* */
+    querySearch(queryString, cb) {
+      var restaurants = this.restaurants
+      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants
+      // 调用 callback 返回建议列表的数据
+      cb(results)
+    },
+    createFilter(queryString) {
+      return (restaurant) => {
+        return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+      }
+    },
 
+    loadAll() {
+      return [
+        { 'value': '三全鲜食（北新泾店）', 'address': '长宁区新渔路144号' },
+        { 'value': '十二泷町', 'address': '上海市北翟路1444弄81号B幢-107' },
+        { 'value': '十二四町', 'address': '上海市北翟路1444弄81号B幢-107' },
+        { 'value': '星移浓缩咖啡', 'address': '上海市嘉定区新郁路817号' },
+        { 'value': '阿姨奶茶/豪大大', 'address': '嘉定区曹安路1611号' },
+        { 'value': '开心丽果（缤谷店）', 'address': '上海市长宁区威宁路天山路341号' },
+        { 'value': '超级鸡车（丰庄路店）', 'address': '上海市嘉定区丰庄路240号' }
+      ]
+    },
+    handleSelect(item) {
+      console.log(item)
+    },
+
+    getSuggestion() { // 查询自动补全
+      if (!this.queryParams.key) {
+        // key没有值，不去搜索了
+        this.ops = []
+        return
+      }
+      axios.get('/company/suggestion?key=' + this.queryParams.key)
+        .then(resp => {
+          this.ops = resp.data
+          console.log("resp",resp)
+        })
+        .catch(e => {
+          console.log(e)
+        })
+    },
+    /* *搜索补全* */
+    handleKeyUp(e) {
+      console.log("e",this.queryParams.key)
+      this.getSuggestion()
+    },
+    say() {
+      console.log('hello')
+    },
+
+    /* *排序* */
     sortedCommand(command) {
-      this.companyList=[]
+      this.companyList = []
       this.queryParams.sortType = command
       this.getCompanyList()
-      console.log(command)
     },
 
     /*搜索*/
     search() {
-      console.log(this.queryParams)
+
       this.queryParams.pageNum = 1
       this.getList()
     },
 
     /*搜索公司*/
     searchCompany() {
-      console.log(this.queryParams)
       this.queryParams.pageNum = 1
       this.getCompanyList()
     },
 
     /*修改用户信息*/
     updateForm() {
-      console.log(this.form)
       if (this.form.userId != undefined) {
         updateUser(this.form).then(response => {
           this.$modal.msgSuccess('修改成功')
@@ -543,7 +617,6 @@ export default {
           })
           response.code = '200'
           response.msg = '查询成功'
-          console.log(response)
           this.companyList = response.rows
           this.companyTotal = response.total
           this.loading = false
@@ -557,7 +630,6 @@ export default {
     showCommentList(row) {
       this.companyOpen = true
       this.commentList = row
-      // console.log(row)
     },
 
     /** 查询部门下拉树结构 */
@@ -623,9 +695,9 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.id);
-      this.single = selection.length != 1;
-      this.multiple = !selection.length;
+      this.ids = selection.map(item => item.id)
+      this.single = selection.length != 1
+      this.multiple = !selection.length
     },
     // 更多操作触发
     handleCommand(command, row) {
@@ -665,7 +737,6 @@ export default {
         this.open = true
         this.title = '修改用户'
         this.form.password = ''
-        console.log('form', this.form)
       })
     },
     /** 重置密码按钮操作 */
@@ -750,6 +821,10 @@ export default {
     submitFileForm() {
       this.$refs.upload.submit()
     }
+
+  },
+  mounted() {
+    this.restaurants = this.loadAll()
   }
 }
 </script>
