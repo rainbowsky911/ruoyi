@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author zdw
@@ -33,12 +34,23 @@ public class CompanyTest {
     private RestHighLevelClient esClient;
 
     //ES索引名称
-    private final static String INDEX_NAME = "company_advice";
-
+    private final static String INDEX_NAME = "company";
 
     @Autowired
     private CompanyService companyService;
 
+
+    /**
+     * 测试ES排序
+     */
+    @Test
+    public void testSortByComment() {
+
+        RequestParams params = new RequestParams();
+        params.setPageSize(10).setPageNum(1).setSortType(1);
+        List<?> rows = companyService.listCompany(params).getRows();
+        System.out.println(rows);
+    }
 
     @Test
     public void testCompanyList() {
@@ -68,6 +80,23 @@ public class CompanyTest {
         }
 
     }
+
+
+    /**
+     * 将数据保存到ES到
+     */
+    @Test
+    public  void saveTOES(){
+
+    }
+
+
+
+
+
+
+
+
 
 
     @BeforeEach
