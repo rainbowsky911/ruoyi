@@ -63,11 +63,13 @@ public class HeFeiCompanyAdvice {
     //请求参数
     private Map<String, Object> params;
 
-    private  int  pageNum;
+    private int pageNum;
 
-    private  int pageSize;
+    private int pageSize;
 
 
+    //搜索建议
+    private String suggestion;
 }
 
 

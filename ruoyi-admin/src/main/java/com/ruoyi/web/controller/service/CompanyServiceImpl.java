@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.service;
 
 import com.alibaba.fastjson.JSON;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.HeFeiCompanyAdvice;
 import com.ruoyi.web.PageResult;
 import com.ruoyi.web.RequestParams;
@@ -37,15 +38,24 @@ public class CompanyServiceImpl implements CompanyService {
     public PageResult listCompany(RequestParams params) {
         SearchRequest request = new SearchRequest(INDEX_NAME);
         BoolQueryBuilder boolQuery = new BoolQueryBuilder();
-        if (params.getTitle() != null) {
+        if (StringUtils.isNotEmpty(params.getTitle())) {
             boolQuery.must(QueryBuilders.matchPhraseQuery("title", params.getTitle()));
+        }else {
+            boolQuery.must(QueryBuilders.matchAllQuery());
         }
         int pageNum = params.getPageNum();
         int pageSize = params.getPageSize();
 
         request.source().from((pageNum - 1) * pageSize).size(pageSize);
-        request.source().sort("createTime", SortOrder.DESC);
-        request.source().sort("commentCount", SortOrder.DESC);
+
+        if (params.getSortType() == 1) {
+            request.source().sort("commentCount", SortOrder.DESC);
+        }else {
+            request.source().sort("createTime", SortOrder.DESC)
+                    .sort("commentCount", SortOrder.DESC);
+        }
+
+
         request.source().query(boolQuery);
         SearchResponse search = null;
         try {
@@ -62,6 +72,6 @@ public class CompanyServiceImpl implements CompanyService {
             HeFeiCompanyAdvice company = JSON.parseObject(json, HeFeiCompanyAdvice.class);
             list.add(company);
         }
-        return new PageResult(total, list,list);
+        return new PageResult(total, list, list);
     }
 }
