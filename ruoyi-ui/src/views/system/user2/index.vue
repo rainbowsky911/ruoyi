@@ -496,6 +496,13 @@ export default {
   },
   methods: {
 
+    /*
+
+    element中的el-input 搜索时输入后匹配输入建议必须有value属性
+
+    参考：https://blog.csdn.net/weixin_58206564/article/details/124255997
+    *
+    * */
     /**搜索建议**/
     querySearchAsync(queryString, cb) {
       clearTimeout(this.timer)
