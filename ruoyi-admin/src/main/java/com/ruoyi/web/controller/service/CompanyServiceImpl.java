@@ -39,7 +39,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Autowired
     private RestHighLevelClient client;
     //ES索引名称
-    private final static String INDEX_NAME = "company";
+    private final static String INDEX_NAME = "company_advice";
 
     @Override
     public PageResult listCompany(RequestParams params) {

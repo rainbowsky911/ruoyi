@@ -40,4 +40,20 @@ public class CompanyController extends BaseController {
     public List<String> getSuggestion(@RequestParam("key") String key) {
         return companyService.getSuggestion(key);
     }
+
+
+
+
+//    @GetMapping("suggestion")
+//    public List<String> saveCompany(@RequestBody List<HeFeiCompanyAdvice> advices) {
+//        //return companyService.;
+//        return null;
+//    }
+
+
+
+
+
+
+
 }
